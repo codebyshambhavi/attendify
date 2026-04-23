@@ -1,0 +1,27 @@
+import { useState } from 'react';
+
+/**
+ * useState that persists to localStorage.
+ */
+export function useLocalStorage(key, initialValue) {
+  const [stored, setStored] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
+
+  const setValue = (value) => {
+    try {
+      const toStore = value instanceof Function ? value(stored) : value;
+      setStored(toStore);
+      window.localStorage.setItem(key, JSON.stringify(toStore));
+    } catch (err) {
+      console.error('useLocalStorage write error:', err);
+    }
+  };
+
+  return [stored, setValue];
+}

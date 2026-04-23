@@ -1,0 +1,156 @@
+const User = require('../models/User');
+const Attendance = require('../models/Attendance');
+const { Parser } = require('json2csv');
+
+// GET /api/admin/users
+const getUsers = async (req, res) => {
+  try {
+    const { search, role } = req.query;
+    const filter = {};
+    if (role) filter.role = role;
+    if (search) filter.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+    ];
+
+    const users = await User.find(filter).sort({ createdAt: -1 });
+    res.json({ users });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PUT /api/admin/users/:id
+const updateUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// DELETE /api/admin/users/:id
+const deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    await Attendance.deleteMany({ user: req.params.id });
+    res.json({ message: 'User and attendance records deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/admin/attendance  ?userId=&date=&month=
+const getAllAttendance = async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.userId) filter.user = req.query.userId;
+    if (req.query.date) filter.date = req.query.date;
+    if (req.query.month) filter.date = { $regex: `^${req.query.month}` };
+
+    const records = await Attendance.find(filter)
+      .populate('user', 'name email studentId department')
+      .sort({ date: -1 });
+
+    res.json({ records });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PUT /api/admin/attendance/:id
+const updateAttendance = async (req, res) => {
+  try {
+    const record = await Attendance.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!record) return res.status(404).json({ message: 'Record not found' });
+    res.json({ record });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/admin/attendance/bulk-mark
+const bulkMark = async (req, res) => {
+  const { userIds, date, status, subject = 'General' } = req.body;
+  try {
+    const ops = userIds.map((uid) => ({
+      updateOne: {
+        filter: { user: uid, date, subject },
+        update: { $set: { status, markedVia: 'admin', markedAt: new Date() } },
+        upsert: true,
+      },
+    }));
+    await Attendance.bulkWrite(ops);
+    res.json({ message: `Marked ${userIds.length} students as ${status}` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/admin/export/csv?month=YYYY-MM
+const exportCSV = async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.month) filter.date = { $regex: `^${req.query.month}` };
+
+    const records = await Attendance.find(filter).populate('user', 'name email studentId department');
+
+    const data = records.map((r) => ({
+      Name: r.user?.name,
+      Email: r.user?.email,
+      StudentID: r.user?.studentId,
+      Department: r.user?.department,
+      Date: r.date,
+      Status: r.status,
+      Subject: r.subject,
+      MarkedVia: r.markedVia,
+    }));
+
+    const parser = new Parser();
+    const csv = parser.parse(data);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment(`attendance-${req.query.month || 'all'}.csv`);
+    res.send(csv);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/admin/stats
+const getStats = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const currentMonth = today.slice(0, 7);
+
+    const [totalUsers, todayPresent, monthRecords] = await Promise.all([
+      User.countDocuments({ role: 'student' }),
+      Attendance.countDocuments({ date: today, status: { $in: ['present', 'late'] } }),
+      Attendance.countDocuments({ date: { $regex: `^${currentMonth}` } }),
+    ]);
+
+    const monthPresent = await Attendance.countDocuments({
+      date: { $regex: `^${currentMonth}` },
+      status: { $in: ['present', 'late'] },
+    });
+
+    res.json({
+      totalUsers,
+      todayPresent,
+      monthAttendanceRate: monthRecords ? Math.round((monthPresent / monthRecords) * 100) : 0,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {
+  getUsers, updateUser, deleteUser,
+  getAllAttendance, updateAttendance, bulkMark,
+  exportCSV, getStats,
+};
