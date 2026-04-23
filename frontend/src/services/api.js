@@ -26,11 +26,11 @@ api.interceptors.response.use(
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 export const authAPI = {
-  signup: (data) => api.post('/auth/signup', data),
-  login: (data) => api.post('/auth/login', data),
-  me: () => api.get('/auth/me'),
-  updateProfile: (data) => api.put('/auth/update-profile', data),
-  changePassword: (data) => api.put('/auth/change-password', data),
+  signup: (data) => api.post('/api/auth/signup', data),
+  login: (data) => api.post('/api/auth/login', data),
+  me: () => api.get('/api/auth/me'),
+  updateProfile: (data) => api.put('/api/auth/update-profile', data),
+  changePassword: (data) => api.put('/api/auth/change-password', data),
 };
 
 // ── Attendance ────────────────────────────────────────────────────────────────
