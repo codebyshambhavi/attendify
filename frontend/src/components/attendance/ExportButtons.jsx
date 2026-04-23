@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Download, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { adminAPI } from '../../services/api';
+import api, { adminAPI } from '../../services/api';
 import { downloadBlob } from '../../utils/helpers';
 import { Button } from '../ui';
-import api from '../../services/api';
 
 export default function ExportButtons({ month, className = '' }) {
   const [csvLoading, setCsvLoading] = useState(false);

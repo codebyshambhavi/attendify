@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, User, Hash, BookOpen, CalendarCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { Button, Input } from '../ui';
+import { Button, Input } from '../components/ui';
 
 export default function SignupPage() {
   const [form, setForm]   = useState({ name: '', email: '', password: '', studentId: '', department: '' });

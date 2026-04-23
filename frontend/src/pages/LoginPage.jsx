@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, CalendarCheck, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
-import { Button, Input } from '../ui';
+import { useAuth } from '../context/AuthContext';
+import { Button, Input } from '../components/ui';
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
