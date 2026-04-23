@@ -1,24 +1,47 @@
 const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
 // POST /api/auth/signup
 const signup = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
   const { name, email, password, studentId, department } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'All required fields missing' });
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
   try {
     const exists = await User.findOne({ email });
-    if (exists) return res.status(409).json({ message: 'Email already registered' });
+    if (exists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
 
-    const user = await User.create({ name, email, password, studentId, department });
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      studentId,
+      department,
+    });
     const token = generateToken(user._id, user.role);
 
-    res.status(201).json({ token, user });
+    res.status(201).json({ message: 'User created successfully', token, user });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('[SIGNUP_ERROR]', err);
+
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
