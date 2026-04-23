@@ -16,7 +16,10 @@ const app = express();
 // ── Security middleware ──────────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://attendify-app-fv9k.onrender.com',
+  ],
   credentials: true,
 }));
 app.use(express.json({ limit: '10kb' }));  // Prevent large payload attacks
