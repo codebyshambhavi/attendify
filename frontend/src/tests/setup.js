@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import React from 'react';
 import { vi } from 'vitest';
 
 // Mock react-hot-toast so we don't need a DOM Toaster in every test
@@ -14,10 +15,10 @@ vi.mock('react-hot-toast', () => ({
 // Mock framer-motion to avoid animation side effects
 vi.mock('framer-motion', () => ({
   motion: {
-    div:    ({ children, ...p }) => <div {...p}>{children}</div>,
-    span:   ({ children, ...p }) => <span {...p}>{children}</span>,
-    tr:     ({ children, ...p }) => <tr {...p}>{children}</tr>,
-    aside:  ({ children, ...p }) => <aside {...p}>{children}</aside>,
+    div:    ({ children, ...p }) => React.createElement('div', p, children),
+    span:   ({ children, ...p }) => React.createElement('span', p, children),
+    tr:     ({ children, ...p }) => React.createElement('tr', p, children),
+    aside:  ({ children, ...p }) => React.createElement('aside', p, children),
   },
   AnimatePresence: ({ children }) => children,
 }));

@@ -14,6 +14,7 @@ import DashboardPage   from './pages/DashboardPage';
 import AttendancePage  from './pages/AttendancePage';
 import HistoryPage     from './pages/HistoryPage';
 import SettingsPage    from './pages/SettingsPage';
+import AdminPage       from './pages/AdminPage';
 import AdminUsersPage  from './pages/AdminUsersPage';
 import AdminRecordsPage from './pages/AdminRecordsPage';
 import AdminQRPage     from './pages/AdminQRPage';
@@ -61,6 +62,7 @@ export default function App() {
               <Route path="/settings"   element={<SettingsPage />} />
 
               {/* Admin-only */}
+              <Route path="/admin"         element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
               <Route path="/admin/users"   element={<ProtectedRoute adminOnly><AdminUsersPage /></ProtectedRoute>} />
               <Route path="/admin/records" element={<ProtectedRoute adminOnly><AdminRecordsPage /></ProtectedRoute>} />
               <Route path="/admin/qr"      element={<ProtectedRoute adminOnly><AdminQRPage /></ProtectedRoute>} />
