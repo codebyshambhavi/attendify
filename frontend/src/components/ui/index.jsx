@@ -34,6 +34,7 @@ export function Badge({ status }) {
     present: 'badge-present',
     absent:  'badge-absent',
     late:    'badge-late',
+    faculty: 'badge-admin',
     admin:   'badge-admin',
     student: 'badge-student',
   };

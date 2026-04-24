@@ -8,6 +8,7 @@ const TITLES = {
   '/attendance':    'Mark Attendance',
   '/history':       'Attendance History',
   '/settings':      'Settings',
+  '/admin':         'Students',
   '/admin/users':   'Manage Users',
   '/admin/records': 'Attendance Records',
   '/admin/qr':      'QR Code Generator',

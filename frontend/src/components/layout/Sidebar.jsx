@@ -14,6 +14,7 @@ const navStudent = [
 ];
 
 const navAdmin = [
+  { to: '/admin',          icon: Users,           label: 'Students'     },
   { to: '/dashboard',      icon: LayoutDashboard, label: 'Dashboard'    },
   { to: '/admin/users',    icon: Users,           label: 'Manage Users' },
   { to: '/admin/records',  icon: CalendarCheck,   label: 'Attendance'   },
@@ -23,7 +24,7 @@ const navAdmin = [
 export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'faculty' || user?.role === 'admin';
   const links = isAdmin ? navAdmin : navStudent;
 
   const handleLogout = () => { logout(); navigate('/login'); };
@@ -38,7 +39,7 @@ export default function Sidebar({ open, onClose }) {
         <span className="font-extrabold text-lg tracking-tight">Attendify</span>
         {isAdmin && (
           <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-brand-600 dark:text-brand-400 bg-brand-100 dark:bg-brand-900/40 px-2 py-0.5 rounded-full">
-            <ShieldCheck size={10} /> Admin
+            <ShieldCheck size={10} /> Faculty
           </span>
         )}
       </div>

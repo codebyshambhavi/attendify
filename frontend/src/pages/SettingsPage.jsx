@@ -10,6 +10,7 @@ import { Card, Button, Input, Avatar } from '../components/ui';
 export default function SettingsPage() {
   const { user, refreshUser } = useAuth();
   const { dark, toggle } = useTheme();
+  const isFaculty = user?.role === 'faculty' || user?.role === 'admin';
 
   const [profile, setProfile] = useState({ name: user?.name || '', studentId: user?.studentId || '', department: user?.department || '' });
   const [pwd, setPwd]         = useState({ currentPassword: '', newPassword: '', confirm: '' });
@@ -58,7 +59,7 @@ export default function SettingsPage() {
           <div>
             <p className="font-bold text-lg">{user?.name}</p>
             <p className="text-sm text-[rgb(var(--text-muted))]">{user?.email}</p>
-            <span className={`badge mt-1 ${user?.role === 'admin' ? 'badge-admin' : 'badge-student'}`}>
+            <span className={`badge mt-1 ${isFaculty ? 'badge-admin' : 'badge-student'}`}>
               {user?.role}
             </span>
           </div>

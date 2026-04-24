@@ -25,7 +25,7 @@ export default function ExportButtons({ month, className = '' }) {
   const handlePDF = async () => {
     setPdfLoading(true);
     try {
-      const { data } = await api.get('/admin/export/pdf', {
+      const { data } = await api.get('/api/admin/export/pdf', {
         params: { month },
         responseType: 'blob',
       });

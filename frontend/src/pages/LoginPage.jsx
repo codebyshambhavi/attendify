@@ -20,8 +20,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
+      const isFaculty = user.role === 'faculty' || user.role === 'admin';
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-      navigate('/dashboard');
+      navigate(isFaculty ? '/admin' : '/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
@@ -125,7 +126,7 @@ export default function LoginPage() {
           {/* Demo credentials hint */}
           <div className="mt-5 p-3.5 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 text-xs text-brand-700 dark:text-brand-300 space-y-0.5">
             <p className="font-semibold">Demo credentials</p>
-            <p>Admin: admin@attendify.com / Admin@123</p>
+            <p>Faculty: admin@attendify.com / Admin@123</p>
             <p>Student: alice@attendify.com / Student@123</p>
           </div>
 

@@ -160,6 +160,7 @@ function AdminDashboard() {
 // ── Export ─────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuth();
+  const isFaculty = user?.role === 'faculty' || user?.role === 'admin';
 
   return (
     <div>
@@ -172,7 +173,7 @@ export default function DashboardPage() {
           {user?.name?.split(' ')[0]} 👋
         </h1>
       </div>
-      {user?.role === 'admin' ? <AdminDashboard /> : <StudentDashboard />}
+      {isFaculty ? <AdminDashboard /> : <StudentDashboard />}
     </div>
   );
 }
