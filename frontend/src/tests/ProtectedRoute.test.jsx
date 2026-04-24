@@ -73,4 +73,10 @@ describe('ProtectedRoute', () => {
     renderWithRoutes('/admin-only');
     expect(screen.getByText('Protected Content')).toBeInTheDocument();
   });
+
+  it('allows faculty through adminOnly route', () => {
+    mockAuthState = { user: { role: 'faculty' }, loading: false };
+    renderWithRoutes('/admin-only');
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+  });
 });

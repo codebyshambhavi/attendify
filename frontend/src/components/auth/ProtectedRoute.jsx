@@ -4,6 +4,7 @@ import { Spinner } from '../ui';
 
 export default function ProtectedRoute({ children, adminOnly = false }) {
   const { user, loading } = useAuth();
+  const isFaculty = user?.role === 'faculty' || user?.role === 'admin';
 
   if (loading) {
     return (
@@ -14,7 +15,7 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  if (adminOnly && !isFaculty) return <Navigate to="/dashboard" replace />;
 
   return children;
 }

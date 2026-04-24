@@ -33,8 +33,9 @@ export function useAdminUsers(params = {}) {
     setLoading(true);
     try {
       const { data } = await adminAPI.getUsers(params);
-      setUsers(data.users);
-      setTotal(data.total);
+      const users = Array.isArray(data) ? data : data.users || [];
+      setUsers(users);
+      setTotal(Array.isArray(data) ? users.length : data.total || users.length);
     } finally {
       setLoading(false);
     }
