@@ -3,9 +3,11 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
+const normalizeRole = (role) => (role === 'admin' ? 'faculty' : role || 'student');
+
 // POST /api/auth/signup
 const signup = async (req, res) => {
-  const { name, email, password, studentId, department } = req.body;
+  const { name, email, password, studentId, department, role } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ message: 'All required fields missing' });
@@ -29,12 +31,17 @@ const signup = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role: normalizeRole(role),
       studentId,
       department,
     });
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user._id, normalizeRole(user.role));
 
-    res.status(201).json({ message: 'User created successfully', token, user });
+    res.status(201).json({
+      message: 'User created successfully',
+      token,
+      user: { ...user.toJSON(), role: normalizeRole(user.role) },
+    });
   } catch (err) {
     console.error('[SIGNUP_ERROR]', {
       message: err.message,
@@ -80,8 +87,9 @@ const login = async (req, res) => {
     }
     if (!user.isActive) return res.status(403).json({ message: 'Account deactivated' });
 
-    const token = generateToken(user._id, user.role);
-    const safeUser = user.toJSON(); // removes password
+    const role = normalizeRole(user.role);
+    const token = generateToken(user._id, role);
+    const safeUser = { ...user.toJSON(), role }; // removes password
 
     res.json({ token, user: safeUser });
   } catch (err) {

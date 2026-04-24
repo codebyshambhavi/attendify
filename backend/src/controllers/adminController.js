@@ -3,12 +3,12 @@ const Attendance = require('../models/Attendance');
 const { Parser } = require('json2csv');
 const { generateAttendancePDF } = require('../utils/exportPDF');
 
-// GET /api/admin/users?search=&role=&page=&limit=
+// GET /api/admin/users
 const getUsers = async (req, res) => {
   try {
-    const { search, role, page = 1, limit = 50 } = req.query;
-    const filter = {};
-    if (role) filter.role = role;
+    const { search } = req.query;
+    const filter = { role: 'student' };
+
     if (search) {
       filter.$or = [
         { name:      { $regex: search, $options: 'i' } },
@@ -16,11 +16,12 @@ const getUsers = async (req, res) => {
         { studentId: { $regex: search, $options: 'i' } },
       ];
     }
-    const [users, total] = await Promise.all([
-      User.find(filter).sort({ createdAt: -1 }).skip((page-1)*limit).limit(Number(limit)),
-      User.countDocuments(filter),
-    ]);
-    res.json({ users, total, page: Number(page), pages: Math.ceil(total/limit) });
+
+    const users = await User.find(filter)
+      .select('-password')
+      .sort({ name: 1 });
+
+    res.json(users);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
@@ -29,6 +30,7 @@ const updateUser = async (req, res) => {
   try {
     const allowed = ['name','role','studentId','department','isActive'];
     const update  = Object.fromEntries(Object.entries(req.body).filter(([k]) => allowed.includes(k)));
+    if (update.role === 'admin') update.role = 'faculty';
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json({ user });

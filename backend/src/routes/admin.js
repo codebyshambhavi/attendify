@@ -1,9 +1,10 @@
 const router = require('express').Router();
-const { authenticate, authorize } = require('../middleware/authenticate');
+const { authenticate } = require('../middleware/authenticate');
+const isAdmin = require('../middleware/isAdmin');
 const { validate, bulkMarkRules } = require('../middleware/validate');
 const ctrl = require('../controllers/adminController');
 
-router.use(authenticate, authorize('admin'));
+router.use(authenticate, isAdmin);
 
 router.get('/users',           ctrl.getUsers);
 router.put('/users/:id',       ctrl.updateUser);

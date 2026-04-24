@@ -6,7 +6,12 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
-    role: { type: String, enum: ['admin', 'student'], default: 'student' },
+    role: {
+      type: String,
+      enum: ['student', 'faculty'],
+      default: 'student',
+      set: (value) => (value === 'admin' ? 'faculty' : value),
+    },
     studentId: { type: String, trim: true },       // optional roll number / ID
     department: { type: String, trim: true },
     avatar: { type: String },                       // URL or initials fallback

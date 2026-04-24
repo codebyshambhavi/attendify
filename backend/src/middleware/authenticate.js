@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const normalizeRole = (role) => (role === 'admin' ? 'faculty' : role);
+
 // Verify JWT and attach user to request
 const authenticate = async (req, res, next) => {
   const header = req.headers.authorization;
@@ -15,7 +17,7 @@ const authenticate = async (req, res, next) => {
     if (!user || !user.isActive) {
       return res.status(401).json({ message: 'User not found or deactivated' });
     }
-    req.user = user;
+    req.user = { ...user.toObject(), role: normalizeRole(user.role) };
     next();
   } catch {
     res.status(401).json({ message: 'Invalid or expired token' });
