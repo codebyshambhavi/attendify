@@ -18,6 +18,7 @@ api.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(err);
@@ -35,28 +36,28 @@ export const authAPI = {
 
 // ── Attendance ────────────────────────────────────────────────────────────────
 export const attendanceAPI = {
-  mark: (data) => api.post('/attendance/mark', data),
-  my: (month) => api.get('/attendance/my', { params: { month } }),
-  today: () => api.get('/attendance/today'),
+  mark: (data) => api.post('/api/attendance/mark', data),
+  my: (month) => api.get('/api/attendance/my', { params: { month } }),
+  today: () => api.get('/api/attendance/today'),
 };
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 export const adminAPI = {
-  stats: () => api.get('/admin/stats'),
-  getUsers: (params) => api.get('/admin/users', { params }),
-  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
-  deleteUser: (id) => api.delete(`/admin/users/${id}`),
-  getAttendance: (params) => api.get('/admin/attendance', { params }),
-  updateAttendance: (id, data) => api.put(`/admin/attendance/${id}`, data),
-  bulkMark: (data) => api.post('/admin/attendance/bulk-mark', data),
-  exportCSV: (month) => api.get('/admin/export/csv', { params: { month }, responseType: 'blob' }),
+  stats: () => api.get('/api/admin/stats'),
+  getUsers: (params) => api.get('/api/admin/users', { params }),
+  updateUser: (id, data) => api.put(`/api/admin/users/${id}`, data),
+  deleteUser: (id) => api.delete(`/api/admin/users/${id}`),
+  getAttendance: (params) => api.get('/api/admin/attendance', { params }),
+  updateAttendance: (id, data) => api.put(`/api/admin/attendance/${id}`, data),
+  bulkMark: (data) => api.post('/api/admin/attendance/bulk-mark', data),
+  exportCSV: (month) => api.get('/api/admin/export/csv', { params: { month }, responseType: 'blob' }),
 };
 
 // ── QR ────────────────────────────────────────────────────────────────────────
 export const qrAPI = {
-  generate: (data) => api.post('/qr/generate', data),
-  scan: (token) => api.post(`/qr/scan/${token}`),
-  sessions: () => api.get('/qr/sessions'),
+  generate: (data) => api.post('/api/qr/generate', data),
+  scan: (token) => api.post(`/api/qr/scan/${token}`),
+  sessions: () => api.get('/api/qr/sessions'),
 };
 
 export default api;

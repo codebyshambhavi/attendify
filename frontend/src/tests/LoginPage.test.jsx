@@ -1,16 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import LoginPage from '../pages/LoginPage';
 
-// Mock auth context
+const passwordPlaceholder = '••••••••';
+
 const mockLogin = vi.fn();
 vi.mock('../context/AuthContext', () => ({
   useAuth: () => ({ login: mockLogin }),
 }));
 
-// Mock router navigate
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -32,7 +33,7 @@ describe('LoginPage', () => {
   it('renders email and password fields', () => {
     renderLogin();
     expect(screen.getByPlaceholderText(/you@example.com/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/••••••••/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(passwordPlaceholder)).toBeInTheDocument();
   });
 
   it('renders sign in button', () => {
@@ -52,7 +53,7 @@ describe('LoginPage', () => {
     renderLogin();
 
     await user.type(screen.getByPlaceholderText(/you@example.com/i), 'alice@test.com');
-    await user.type(screen.getByPlaceholderText(/••••••••/i), 'password123');
+    await user.type(screen.getByPlaceholderText(passwordPlaceholder), 'password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
@@ -67,7 +68,7 @@ describe('LoginPage', () => {
     renderLogin();
 
     await user.type(screen.getByPlaceholderText(/you@example.com/i), 'alice@test.com');
-    await user.type(screen.getByPlaceholderText(/••••••••/i), 'password123');
+    await user.type(screen.getByPlaceholderText(passwordPlaceholder), 'password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
@@ -75,9 +76,23 @@ describe('LoginPage', () => {
     });
   });
 
+  it('navigates faculty user to admin on successful login', async () => {
+    const user = userEvent.setup();
+    mockLogin.mockResolvedValueOnce({ name: 'Faculty User', role: 'faculty' });
+
+    renderLogin();
+
+    await user.type(screen.getByPlaceholderText(/you@example.com/i), 'faculty@test.com');
+    await user.type(screen.getByPlaceholderText(passwordPlaceholder), 'password123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/admin');
+    });
+  });
+
   it('shows error toast on failed login', async () => {
-    const user   = userEvent.setup();
-    const toast  = await import('react-hot-toast');
+    const user = userEvent.setup();
     mockLogin.mockRejectedValueOnce({
       response: { data: { message: 'Invalid credentials' } },
     });
@@ -85,11 +100,11 @@ describe('LoginPage', () => {
     renderLogin();
 
     await user.type(screen.getByPlaceholderText(/you@example.com/i), 'bad@test.com');
-    await user.type(screen.getByPlaceholderText(/••••••••/i), 'wrongpass');
+    await user.type(screen.getByPlaceholderText(passwordPlaceholder), 'wrongpass');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
-      expect(toast.default.error).toHaveBeenCalledWith('Invalid credentials');
+      expect(toast.error).toHaveBeenCalledWith('Invalid credentials');
     });
   });
 
@@ -97,17 +112,11 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     renderLogin();
 
-    const pwdInput = screen.getByPlaceholderText(/••••••••/i);
+    const pwdInput = screen.getByPlaceholderText(passwordPlaceholder);
     expect(pwdInput).toHaveAttribute('type', 'password');
 
-    // Find and click the eye toggle (last button before submit)
-    const toggleBtn = screen.getByTitle
-      ? screen.queryByTitle(/show|hide/i)
-      : null;
-
-    // Fallback — find all buttons and click the eye icon one
     const buttons = screen.getAllByRole('button');
-    const eyeBtn  = buttons.find((b) => b.type === 'button' && !b.textContent.includes('Sign'));
+    const eyeBtn = buttons.find((button) => button.type === 'button' && !button.textContent.includes('Sign'));
     if (eyeBtn) {
       await user.click(eyeBtn);
       expect(pwdInput).toHaveAttribute('type', 'text');

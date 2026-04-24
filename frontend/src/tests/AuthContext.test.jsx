@@ -3,16 +3,14 @@ import { render, screen, act, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 
-// Mock the API module
 vi.mock('../services/api', () => ({
   authAPI: {
-    me:    vi.fn(),
+    me: vi.fn(),
     login: vi.fn(),
     signup: vi.fn(),
   },
 }));
 
-// Helper component that reads auth context
 const AuthDisplay = () => {
   const { user, loading } = useAuth();
   if (loading) return <p>loading</p>;
@@ -22,7 +20,9 @@ const AuthDisplay = () => {
 describe('AuthContext', () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.clearAllMocks();
+    authAPI.me.mockReset();
+    authAPI.login.mockReset();
+    authAPI.signup.mockReset();
   });
 
   it('shows logged out when no token in localStorage', async () => {
@@ -56,6 +56,7 @@ describe('AuthContext', () => {
 
   it('clears token on failed rehydration', async () => {
     localStorage.setItem('token', 'expired-token');
+    localStorage.setItem('user', JSON.stringify({ email: 'expired@test.com', role: 'student' }));
     authAPI.me.mockRejectedValueOnce(new Error('401'));
 
     render(
@@ -67,11 +68,11 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(screen.getByText('logged out')).toBeInTheDocument();
       expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('user')).toBeNull();
     });
   });
 });
 
-// Login function test
 const LoginTester = () => {
   const { login, user } = useAuth();
   return (
@@ -85,7 +86,9 @@ const LoginTester = () => {
 describe('AuthContext login()', () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.clearAllMocks();
+    authAPI.me.mockReset();
+    authAPI.login.mockReset();
+    authAPI.signup.mockReset();
     authAPI.me.mockRejectedValue(new Error('no token'));
   });
 
@@ -109,6 +112,7 @@ describe('AuthContext login()', () => {
     await waitFor(() => {
       expect(screen.getByText('user: a@b.com')).toBeInTheDocument();
       expect(localStorage.getItem('token')).toBe('new-token');
+      expect(localStorage.getItem('user')).toBe(JSON.stringify({ email: 'a@b.com', role: 'student' }));
     });
   });
 });
