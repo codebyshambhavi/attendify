@@ -20,7 +20,7 @@ app.use('/api/attendance', attRoutes);
 const createAdmin = async () => {
   const admin = await User.create({
     name: 'Admin', email: 'admin@test.com',
-    password: 'Admin@123', role: 'admin',
+    password: 'Admin@123', role: 'faculty',
   });
   const res = await request(app)
     .post('/api/auth/login')
@@ -61,7 +61,7 @@ describe('Admin route access control', () => {
 
 // ── User management ───────────────────────────────────────────────────────────
 describe('GET /api/admin/users', () => {
-  it('returns all users with pagination info', async () => {
+  it('returns only student users', async () => {
     const { token } = await createAdmin();
     await createStudent('s1@test.com');
     await createStudent('s2@test.com');
@@ -71,19 +71,9 @@ describe('GET /api/admin/users', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.users.length).toBeGreaterThanOrEqual(2);
-    expect(res.body).toHaveProperty('total');
-  });
-
-  it('filters by role', async () => {
-    const { token } = await createAdmin();
-    await createStudent();
-
-    const res = await request(app)
-      .get('/api/admin/users?role=admin')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(res.body.users.every((u) => u.role === 'admin')).toBe(true);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThanOrEqual(2);
+    expect(res.body.every((u) => u.role === 'student')).toBe(true);
   });
 
   it('searches by name', async () => {
@@ -96,8 +86,8 @@ describe('GET /api/admin/users', () => {
       .get('/api/admin/users?search=Findable')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(res.body.users.length).toBe(1);
-    expect(res.body.users[0].name).toBe('Findable Unique');
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].name).toBe('Findable Unique');
   });
 });
 
@@ -115,17 +105,17 @@ describe('PUT /api/admin/users/:id', () => {
     expect(res.body.user.department).toBe('Physics');
   });
 
-  it('cannot promote to admin via updateUser (role allowed)', async () => {
+  it('can promote to faculty via updateUser', async () => {
     const { token } = await createAdmin();
     const { student } = await createStudent();
 
     const res = await request(app)
       .put(`/api/admin/users/${student._id}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ role: 'admin' });
+      .send({ role: 'faculty' });
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.user.role).toBe('admin');
+    expect(res.body.user.role).toBe('faculty');
   });
 });
 

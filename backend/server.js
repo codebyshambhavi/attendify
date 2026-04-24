@@ -54,8 +54,14 @@ app.use((err, req, res, next) => {
 
 // ── Connect DB + Start ────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('Missing MONGODB_URI in environment variables');
+  process.exit(1);
+}
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(MONGODB_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
     app.listen(PORT, () =>
