@@ -18,7 +18,7 @@ export default function AdminUsersPage() {
   const load = () => {
     setLoading(true);
     adminAPI.getUsers({ search, role: roleFilter })
-      .then(({ data }) => setUsers(data.users))
+      .then(({ data }) => setUsers(Array.isArray(data) ? data : data.users || []))
       .finally(() => setLoading(false));
   };
 
@@ -85,7 +85,7 @@ export default function AdminUsersPage() {
         >
           <option value="">All roles</option>
           <option value="student">Student</option>
-          <option value="admin">Admin</option>
+          <option value="faculty">Faculty</option>
         </select>
       </div>
 
@@ -173,7 +173,7 @@ export default function AdminUsersPage() {
             <Input label="Department" value={editUser.department || ''} onChange={(e) => setEditUser((u) => ({ ...u, department: e.target.value }))} />
             <Select label="Role" value={editUser.role} onChange={(e) => setEditUser((u) => ({ ...u, role: e.target.value }))}>
               <option value="student">Student</option>
-              <option value="admin">Admin</option>
+              <option value="faculty">Faculty</option>
             </Select>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="isActive" checked={editUser.isActive} onChange={(e) => setEditUser((u) => ({ ...u, isActive: e.target.checked }))} className="w-4 h-4 accent-brand-600" />
